@@ -134,7 +134,6 @@ $(function() {
         };
 
         self.getGeocode = function(callback) {
-                                        console.log('here');
             self.geocoder.geocode({
                 'address': self.address()
             }, function(results, status) {
@@ -282,7 +281,6 @@ $(function() {
                     "format": "json"
                 },
                 success: function(photos) {
-                    console.log(photos.items[0])
                     for (var i = 0; i < photos.items.length && i < maxPhotos; i++) {
                         self.photoArray.push({
                             'url': photos.items[i].media.m
