@@ -1,9 +1,187 @@
-#map {
-    height: 600px;
-    width: 600px;
-    border: 1px solid grey;
+:root {
+    --restaurant: #E0E0E0;
+    --pale-restaurant: #F5F5F5;
+    --park: #81C784;
+    --pale-park: #C8E6C9;
+    --school: #FFB74D;
+    --pale-school: #FFE0B2;
+    --grocery: #FFF176;
+    --pale-grocery: #FFF9C4;
+    --custom: #E57373;
+    --pale-custom: #FFCDD2;
+}
+* {
+        box-sizing: border-box;
+}
+body {
+    height: 100%;
+    min-width: 456px;
+}
+.row {
+    width: 100%;
+    margin: 0;
+}
+.no-padding {
+    padding: 0;
+}
+.container-fluid {
+    padding: 0;
+    /* overflow-x: hidden; */
 }
 
-#list-view {
-    float: left;
+input#address-input, input#filter-input {
+    width: 60%;
+}
+
+div#list-inputs-row {
+    margin-bottom: 15px;
+}
+.form-control {
+    display: inline;
+}
+
+div.jumbotron {
+    height: 200px;
+    padding: .67em .5em 0 .5em;
+    text-align: center;
+    margin: 0;
+    background-image: url(../img/cityscape.jpg);
+    background-size: cover;
+}
+.jumbotron > h1 {
+    color: white;
+    text-shadow: grey 1px 1px 1px;
+    font-family: 'Fredericka the Great', sans-serif;
+}
+div#list-view-row {
+    margin-top: -60px;
+    width: 100%;
+}
+div#list-view {
+    padding: 0;
+}
+#map {
+    height: 600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+div#list-view > ul {
+    list-style: none;
+    margin-bottom: 0;
+    display: none;
+}
+div#map-query-div {
+    padding: 0;
+    margin-top: 60px;
+}
+
+div#photo-div {
+    padding: 0;
+}
+li.results {
+    padding: .5em;
+}
+.grocery-li {
+    background-color: var(--pale-grocery);
+}
+.grocery-li:hover {
+    background-color: var(--grocery);
+}
+.restaurants-li {
+    background-color: var(--pale-restaurant);
+}
+.restaurants-li:hover {
+    background-color: var(--restaurant);
+}
+.parks-li {
+    background-color: var(--pale-park);
+}
+.parks-li:hover {
+    background-color: var(--park);
+}
+.schools-li{
+    background-color: var(--pale-school);
+}
+.schools-li:hover {
+    background-color: var(--school);
+}
+.user-li {
+    background-color: var(--pale-custom);
+}
+.user-li:hover {
+    background-color: var(--custom);
+}
+fieldset {
+    margin: 1.3em .95em;
+}
+input.custom-query {
+    max-width: 150px;
+}
+div.input-block {
+    display: block;
+    padding: 0 0 .75em 0;
+}
+div.search-options {
+    margin: .67em 0;
+}
+img.place-photos {
+    width:100%;
+}
+.photoholder {
+    padding: 0;
+}
+
+@media only screen and (min-width: 755px) {
+    .jumbotron h1 {
+        font-size: 50px;
+    }
+    .jumbotron {
+        height: 240px;
+    }
+    form#address-form {
+        margin-bottom: 6px;
+    }
+    div#map-query-div {
+        margin-top: 0;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    div#list-view > ul {
+        display: block;
+    }
+    div#list-view-row {
+        width: 41%;
+        display: inline;
+    }
+    div#list-inputs-row{
+        margin-bottom: 0;
+    }
+    input#address-input {
+        width: 80%;
+        }
+     input#filter-input {
+        width: 100%;
+    }
+    div#list-view {
+        overflow-y: scroll;
+        height: calc(100vh - 180px);
+    }
+    .btn#result-toggle {
+        display: none;
+    }
+    .jumbotron {
+        height: 180px;
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    div#photo-div {
+        overflow-y: scroll;
+        height: calc(100vh - 180px);
+    }
+    input#address-input {
+        width: 60%;
+    }
 }

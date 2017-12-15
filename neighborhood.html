@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neighborhood Helper</title>
+    <link rel="stylesheet" type="text/css" href="./css/css_reset.css" />
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+     <link href="https://fonts.googleapis.com/css?family=Fredericka+the+Great" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./css/styles.css" />
+</head>
+<body>
+    <div class="container-fluid">
+    <div class="jumbotron row">
+        <h1>What's Good in the Hood</h1>
+        <form id="address-form" class="form-inline col-xs-12" data-bind="submit: updateAddress">
+                    <input id="address-input" class="form-control input-lg" data-bind="value: address" />
+                    <button type="submit" class="btn btn-lg">Update</button>
+    </form>
+</div>
+<div id="list-view-row">
+<div id="list-view" class="col-lg-2 col-md-3 col-xs-12 text-center">
+    <div id="list-inputs-row" class="row">
+        <input id="filter-input" class="form-control" placeholder="Filter Visible Results" data-bind="textInput: userFilter" />
+        <button id="result-toggle" class="btn" data-bind="click: toggleResults">Toggle</button>
+    </div>
+    <ul id="filtered-results" class="text-left no-padding" data-bind="foreach: filteredResultArray">
+        <li data-bind="text: name, attr: {class: query + '-li results' , id: 'result' + place_id}, event: { mouseover: function() {$parent.animateMarker(place_id, query)}, mouseout: function() {$parent.animateMarker(place_id, query)}, click: function() {$parent.toggleInfoWindow($parent.getMarker(place_id, query))} }">
+        </li>
+    </ul>
+</div>
+</div>
+<div id="map-query-div" class="col-lg-7 col-md-9">
+<div id="map-holder">
+
+<div id="map">
+
+</div>
+
+</div>
+<div class="container-fluid">
+    <fieldset>
+        <legend>
+            Search Nearby
+        </legend>
+        <div class="row search-options">
+        <div class="col-lg-4 col-md-3">
+            <div class="input-block">
+            <input type="checkbox" id="grocery-check" name="queries" data-bind="checked: getQuery('grocery').check" />
+            <label for="grocery-check">Grocery Stores</label>
+        </div>
+        <div class="input-block">
+            <input type="checkbox" name="queries" data-bind="checked: getQuery('restaurants').check" />
+            <label for="restaurants-check">Restaurants</label>
+        </div>
+        </div>
+        <div class="col-lg-4 col-md-3">
+            <div class="input-block">
+            <input type="checkbox" data-bind="checked: getQuery('parks').check" />
+            <label for="parks-check">Parks</label>
+        </div>
+        <div class="input-block">
+            <input type="checkbox" data-bind="checked: getQuery('schools').check" />
+            <label for="schools-check">Schools</label>
+        </div>
+    </div>
+        <div class="col-lg-4 col-md-5">
+            <div class="input-block">
+            <input type="checkbox" data-bind="checked: getQuery('user').check" />
+            <input class="custom-query" placeholder="Enter Custom Query" data-bind="value: getQuery('user').userQuery" />
+            <button type="submit" data-bind="click: getQuery('user').executeQuery">Go</button>
+</div>
+<div class="input-block">
+            <label for="search-radius">Radius: </label>
+        <select id="search-radius"  data-bind="value: searchRadius">
+            <label for="search-radius">Search Radius</label>
+            <option value="3219">2 Miles</option>
+            <option value="8047">5 Miles</option>
+            <option value="16093">10 Miles</option>
+        </select>
+    </div>
+    </div>
+</div>
+    </fieldset>
+</div>
+</div>
+<div id="photo-div" class="col-lg-3 col-sm-12" data-bind="foreach: photoArray">
+    <div class="col-lg-12 col-md-4 col-sm-6 photoholder">
+    <img class="place-photos" data-bind="attr: {src: url}" />
+</div>
+</div>
+</div>
+</div>
+<script
+src="https://code.jquery.com/jquery-3.2.1.min.js"
+integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+crossorigin="anonymous"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3&key=***-YOUR KEY HERE-***&libraries=places">
+</script>
+<script src="js/knockout-3.4.2.js"></script>
+<script type="text/javascript" src="js/neighborhood.js"></script>
+</body>
+</html>
