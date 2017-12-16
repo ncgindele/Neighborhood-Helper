@@ -142,9 +142,6 @@ img.place-photos {
     form#address-form {
         margin-bottom: 6px;
     }
-    div#map-query-div {
-        margin-top: 0;
-    }
 }
 
 @media only screen and (min-width: 992px) {
