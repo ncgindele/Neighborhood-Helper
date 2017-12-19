@@ -68,6 +68,7 @@ input#address-input, input#filter-input {
 
 #list-view {
     padding: 0;
+    margin-bottom: -60px;
 }
 
 #map {
@@ -147,7 +148,7 @@ li.results {
 }
 
 fieldset {
-    margin: 1.3em .95em;
+    margin: 1.3em .95em 0 .95em;
 }
 
 input.custom-query {

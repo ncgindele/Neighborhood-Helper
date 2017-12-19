@@ -86,6 +86,7 @@ $(function() {
             }
         };
         self.resultsVisibility = ko.observable(self.getCurrentVisibility());
+        self.flickrMessage = ko.observable('');
         self.address = ko.observable("Denver, CO"); // Initial address
         self.userFilter = ko.observable('');
         self.placeService = false;
@@ -218,6 +219,7 @@ $(function() {
             });
             marker.addListener('click', function() {
                 self.toggleInfoWindow(marker);
+                self.map.panTo(marker.getPosition());
             });
             return marker;
         };
@@ -300,11 +302,16 @@ $(function() {
                     "format": "json"
                 },
                 success: function(photos) {
-                    for (var i = 0; i < photos.items.length && i < maxPhotos; i++) {
-                        self.photoArray.push({
-                            'url': photos.items[i].media.m,
-                            'alt': photos.items[i].title
-                        });
+                    if (photos.items.length == 0) {
+                        self.flickrMessage('No Flickr photos available.')
+                    } else {
+                        self.flickrMessage('');
+                        for (var i = 0; i < photos.items.length && i < maxPhotos; i++) {
+                            self.photoArray.push({
+                                'url': photos.items[i].media.m,
+                                'alt': photos.items[i].title
+                            });
+                        }
                     }
                 }
             }).fail(function() {
