@@ -46,13 +46,14 @@ input#address-input, input#filter-input {
     display: inline;
 }
 
-.jumbotron {
+header.jumbotron#my-jumbo {
     height: 200px;
     padding: .67em .5em 0 .5em;
     text-align: center;
-    margin: 0;
+    margin: 0 0 0 0;
     background-image: url(../img/cityscape.jpg);
     background-size: cover;
+    border-radius: 0;
 }
 
 .jumbotron>h1 {
@@ -62,13 +63,12 @@ input#address-input, input#filter-input {
 }
 
 #list-view-row {
-    margin-top: -60px;
     width: 100%;
+    margin-top: -60px;
 }
 
 #list-view {
     padding: 0;
-    margin-bottom: -60px;
 }
 
 #map {
@@ -84,7 +84,8 @@ input#address-input, input#filter-input {
 
 #map-query-div {
     padding: 0;
-    margin-top: 60px;
+    position: relative;
+    top: 0;
 }
 
 #photo-div {
@@ -173,22 +174,16 @@ img.place-photos {
 }
 
 @media only screen and (min-width: 755px) {
-
     .jumbotron h1 {
         font-size: 50px;
     }
 
-    .jumbotron {
-        height: 240px;
-    }
-
-    form#address-form {
-        margin-bottom: 6px;
+    header.jumbotron#my-jumbo {
+        height: 230px;
     }
 }
 
 @media only screen and (min-width: 992px) {
-
     #map-query-div {
         margin-top: 0;
     }
@@ -223,7 +218,7 @@ img.place-photos {
         display: none;
     }
 
-    .jumbotron {
+    header.jumbotron#my-jumbo {
         height: 180px;
     }
 }
@@ -233,7 +228,7 @@ img.place-photos {
         overflow-y: scroll;
         height: calc(100vh - 180px);
     }
-
+    
     input#address-input {
         width: 60%;
     }
