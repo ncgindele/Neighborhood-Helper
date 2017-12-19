@@ -1,3 +1,19 @@
+var initMap = function() {
+    // This is called only if the Google Maps API finishes before the NeighborhoodViewModel has initialized. It is remapped to the real initMap function once ready.
+    if (!runInit) {
+        $(window).on('load', function() {
+            initMap();
+            runInit = true;
+        });
+    } else {
+        return;
+    }
+};
+var runInit = false;
+var googleMapsError = function() {
+    alert('Google Maps has failed to load. Check your connection and refresh the page.');
+};
+
 $(function() {
     var NeighborhoodViewModel = function() {
         var self = this;
@@ -9,18 +25,16 @@ $(function() {
                     'name': 'restaurants',
                     'icon': {
                         'url': baseIconUrl + 'dining.png',
-                        'scaledSize': new google.maps.Size(40, 40)
                     },
                     'type': 'restaurant',
                     'keyword': false,
-                    'default_value': false // Make true to display query on initialization
+                    'default_value': true // Make false to disable on initialization
                 },
 
                 'grocery': {
                     'name': 'grocery',
                     'icon': {
                         'url': baseIconUrl + 'grocery.png',
-                        'scaledSize': new google.maps.Size(40, 40)
                     },
                     'type': 'supermarket',
                     'keyword': false,
@@ -31,29 +45,26 @@ $(function() {
                     'name': 'parks',
                     'icon': {
                         'url': baseIconUrl + 'parks.png',
-                        'scaledSize': new google.maps.Size(40, 40)
                     },
                     'type': 'park',
                     'keyword': false,
-                    'default_value': false
+                    'default_value': true
                 },
 
                 'schools': {
                     'name': 'schools',
                     'icon': {
                         'url': baseIconUrl + 'schools.png',
-                        'scaledSize': new google.maps.Size(40, 40)
                     },
                     'type': 'school',
                     'keyword': false,
-                    'default_value': false
+                    'default_value': true
                 },
 
                 'user': {
                     'name': 'user',
                     'icon': {
                         'url': 'https://maps.google.com/mapfiles/kml/paddle/red-circle.png',
-                        'scaledSize': new google.maps.Size(40, 40)
                     },
                     'type': false,
                     'keyword': false,
@@ -62,25 +73,57 @@ $(function() {
             }[query];
         };
 
-        // MAP PROPERTIES
 
+        // BASIC PROPERTIES AND FUNCTIONS
+
+        self.getCurrentVisibility = function() {
+            // This tells the ViewModel whether the results are visible on load up and allows the CSS breakpoints to function properly.
+            var display = $('#filtered-results').css('display');
+            if (display === 'none') {
+                return 'invisible';
+            } else {
+                return 'visible';
+            }
+        };
+        self.resultsVisibility = ko.observable(self.getCurrentVisibility());
         self.address = ko.observable("Denver, CO"); // Initial address
+        self.userFilter = ko.observable('');
         self.placeService = false;
         self.map = false;
         self.photoArray = ko.observableArray();
-        self.geocoder = new google.maps.Geocoder();
         self.boundsChange = ko.observable();
-        self.searchRadius = ko.observable();
+        self.searchRadius = ko.observable(3219); // Default is 2 miles in meters
         self.searchRadius.subscribe(function(newRadius) {
             if (self.map) {
                 self.displayQueries();
             }
         }, this);
-
-
-        // QUERY PROPERTIES
-
         self.queryArray = [new Query('restaurants'), new Query('grocery'), new Query('parks'), new Query('schools'), new Query('user')];
+        self.filteredResultArray = ko.computed(function() {
+            // Filters results based on user input. Filtered results do not appear in list or on map
+            var resultArray = [];
+            var results;
+            var marker;
+            var result;
+            for (var i = 0; i < self.queryArray.length; i++) {
+                results = self.queryArray[i].results();
+                for (var j = 0; j < results.length; j++) {
+                    result = results[j];
+                    marker = self.getMarker(result.place_id, result.query);
+                    if (result.name.toLowerCase().includes(self.userFilter().toLowerCase())) {
+                        marker.setVisible(true);
+                        resultArray.push(result);
+                    } else {
+                        marker.setVisible(false);
+                    }
+                }
+            }
+            return resultArray;
+        }, this);
+
+
+        // QUERY FUNCTIONS
+
         self.getQuery = function(queryName) {
             for (var i = 0; i < self.queryArray.length; i++) {
                 if (self.queryArray[i].name == queryName) {
@@ -88,74 +131,26 @@ $(function() {
                 }
             }
         };
-        self.userFilter = ko.observable('');
-        self.maxResults = 20;
-        self.filteredResultArray = ko.computed(function() {
-            var resultArray = [];
-            for (var i = 0; i < self.queryArray.length; i++) {
-                resultArray = resultArray.concat(self.queryArray[i].results().filter(result => result.name.toLowerCase().includes(self.userFilter().toLowerCase())));
-            }
-            return resultArray;
-        }, this);
-
-        self.showVisibleResults = function() {
-            // Removes results in the filter list if they are not in the visible area of the map
-            if (!self.map || self.filteredResultArray().length === 0) {
-                return;
-            }
-            var bounds = self.map.getBounds();
-            var markerPos;
-            var result;
-
-            for (var i = 0; i < self.filteredResultArray().length; i++) {
-                result = self.filteredResultArray()[i];
-                markerPos = {
-                    'lat': result.geometry.location.lat(),
-                    'lng': result.geometry.location.lng()
-                };
-                if (bounds.contains(markerPos)) {
-                    document.getElementById('result' + result.place_id).setAttribute("style", "display: block");
-                } else {
-                    document.getElementById('result' + result.place_id).setAttribute("style", "display: none");
-                }
-            }
-        };
 
         self.toggleResults = function() {
-            $('#filtered-results').toggle();
+            if (self.resultsVisibility() === 'visible') {
+                self.resultsVisibility('invisible');
+            } else {
+                self.resultsVisibility('visible');
+            }
         };
+
 
         // CORE MAP / DISPLAY FUNCTIONS
 
-        self.displayQueries = function() {
-            for (var i = 0; i < self.queryArray.length; i++) {
-                self.queryArray[i].executeQuery();
-            }
-        };
-
-        self.getGeocode = function(callback) {
-            self.geocoder.geocode({
-                'address': self.address()
-            }, function(results, status) {
-                if (status === google.maps.GeocoderStatus.OK) {
-                    callback(results[0].geometry.location);
-                } else {
-                    alert('status: ' + status);
-                }
-            });
-        };
-
-        self.initMap = function() {
+        initMap = function() {
             self.getGeocode(function(geocode) {
                 self.geocodeAddress = geocode;
                 if (!self.map) {
                     self.map = new google.maps.Map(document.getElementById('map'), {
-                        zoom: 14,
+                        zoom: 13,
                         center: self.geocodeAddress
                     });
-                    self.map.addListener('bounds_changed', function() {
-                        self.showVisibleResults();
-                    })
                     self.addressMarker = new google.maps.Marker({
                         map: self.map,
                         animation: google.maps.Animation.DROP,
@@ -166,7 +161,34 @@ $(function() {
                             'scaledSize': new google.maps.Size(50, 50)
                         }
                     });
-                    self.displayQueries();
+                    self.currentInfoWindow = new google.maps.InfoWindow({
+                        content: "<div><p>Hello!</p></div>"
+                    });
+                    self.displayQueries(init = true);
+                }
+            });
+        };
+
+        self.displayQueries = function(init = false) {
+            for (var i = 0; i < self.queryArray.length; i++) {
+                if (init) {
+                    self.queryArray[i].postAsyncInit();
+                }
+                self.queryArray[i].executeQuery();
+            }
+        };
+
+        self.getGeocode = function(callback) {
+            if (!self.geocoder) {
+                self.geocoder = new google.maps.Geocoder();
+            }
+            self.geocoder.geocode({
+                'address': self.address()
+            }, function(results, status) {
+                if (status === google.maps.GeocoderStatus.OK) {
+                    callback(results[0].geometry.location);
+                } else {
+                    alert('status: ' + status);
                 }
             });
         };
@@ -241,10 +263,6 @@ $(function() {
 
         // INFOWINDOW and PHOTOS
 
-        self.currentInfoWindow = new google.maps.InfoWindow({
-            content: "<div><p>Hello!</p></div>"
-        });
-
         self.toggleInfoWindow = function(marker) {
             self.animateMarker(false, false, marker = marker);
             var result = self.getResultFromMarker(marker)[0];
@@ -262,13 +280,14 @@ $(function() {
             var maxPhotos = 5;
             var photoWidth = '600'; //in pixels
             var photoUrl;
-            if (result) {
+            if (result.photos) {
                 for (var i = 0; i < result.photos.length && i < maxPhotos; i++) {
                     photoUrl = result.photos[0].getUrl({
                         maxWidth: photoWidth
                     });
                     self.photoArray.push({
-                        'url': photoUrl
+                        'url': photoUrl,
+                        'alt': result.name
                     });
                 }
             }
@@ -283,7 +302,8 @@ $(function() {
                 success: function(photos) {
                     for (var i = 0; i < photos.items.length && i < maxPhotos; i++) {
                         self.photoArray.push({
-                            'url': photos.items[i].media.m
+                            'url': photos.items[i].media.m,
+                            'alt': photos.items[i].title
                         });
                     }
                 }
@@ -311,7 +331,7 @@ $(function() {
         };
 
 
-// QUERY OBJECT (CARRIES OUT SEARCHING FUNCTIONALITY)
+        // QUERY OBJECT (CARRIES OUT SEARCHING FUNCTIONALITY)
 
         function Query(name) {
             var q = this;
@@ -333,7 +353,7 @@ $(function() {
             q.clearAll = function() {
                 q.clearMarkers();
                 q.results.removeAll();
-            }
+            };
             q.clearMarkers = function() {
                 for (var i = 0; i < q.markers.length; i++) {
                     q.markers[i].setMap(null);
@@ -347,6 +367,9 @@ $(function() {
                     q.clearAll();
                 }
             });
+            q.postAsyncInit = function() {
+                q.static.icon.scaledSize = new google.maps.Size(40, 40);
+            }
             q.executeQuery = function() {
                 if ((q.check() && q.name !== 'user') || (q.name === 'user' && q.check() && q.userQuery())) {
                     if (q.name === 'user') {
@@ -366,24 +389,21 @@ $(function() {
                             for (var i = 0; i < places.length; i++) {
                                 var place = places[i];
                                 place.query = q.static.name;
+                                place.visibility = ko.observable('visible');
                                 q.markers.push(self.createMarker(place, q));
                                 q.results.push(place);
                             }
-                            self.showVisibleResults();
-                        } else {
-                            alert('Failed to get search results.');
                         }
                     });
                 }
             };
         }
-        // Initialize Map and Queries
-        self.initMap();
         $(window).resize(function() {
-            // Keeps main address if widow changes
+            self.resultsVisibility('');
+            self.resultsVisibility(self.getCurrentVisibility());
+            // Keeps address in center if window changes
             self.map.setCenter(self.geocodeAddress);
         });
     };
-
     ko.applyBindings(new NeighborhoodViewModel());
 });
